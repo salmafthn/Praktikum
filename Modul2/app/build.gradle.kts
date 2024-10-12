@@ -19,6 +19,11 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "API_KEY", "\"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\"")
+        buildConfigField("String", "BASE_URL", "\"https://api.github.com/\"")
+
+
     }
 
     buildTypes {
@@ -39,6 +44,8 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -77,4 +84,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
     implementation ("androidx.navigation:navigation-compose:2.5.0")
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("io.coil-kt:coil-compose:2.0.0")
+
 }
