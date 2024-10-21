@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import androidx.navigation.NavController
+import com.example.modul2.navigation.Screen
 
 @Composable
 fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
@@ -42,11 +43,9 @@ fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
     LaunchedEffect(Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            val intent = Intent(context, ListActivity::class.java)
-            context.startActivity(intent)
+            navController.navigate(Screen.Matkul.route)
         }
     }
-
     val isButtonEnabled = text.isNotEmpty() && numberText.isNotEmpty()
 
     Scaffold { paddingValues ->
@@ -104,14 +103,14 @@ fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+
             Button(
                 onClick = {
                     if (isButtonEnabled) {
                         auth.signInWithEmailAndPassword(text, numberText)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
-                                    val intent = Intent(context, ListActivity::class.java)
-                                    context.startActivity(intent)
+                                    navController.navigate(Screen.Matkul.route)
                                 } else {
                                     Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                                 }

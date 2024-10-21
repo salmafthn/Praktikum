@@ -1,4 +1,4 @@
-package com.example.modul2
+package com.example.modul2.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,18 +27,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.modul2.R
 import com.example.modul2.data.viewmodel.MainViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Profile(
+fun ProfileScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    auth: FirebaseAuth
 ) {
     val viewModel: MainViewModel = viewModel()
     val user by viewModel.user.collectAsState()
+
 
     LaunchedEffect(Unit) {
         viewModel.getGithubProfile("salmafthn")
@@ -52,12 +58,17 @@ fun Profile(
             CenterAlignedTopAppBar(
                 title = { Text("Profile") },
                 colors = TopAppBarDefaults.smallTopAppBarColors(),
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.left_round),
-                            contentDescription = "Back"
-                        )
+                actions = {
+                    Button(onClick = {
+                        auth.signOut()
+                        navController.navigate("login"){
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                        }
+
+                    }) {
+                        Text("Logout")
                     }
                 },
                 scrollBehavior = scrollBehavior

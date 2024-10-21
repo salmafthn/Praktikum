@@ -1,4 +1,4 @@
-package com.example.modul2
+package com.example.modul2.data.entity
 
 data class Matkul(
     val Hari: String,
