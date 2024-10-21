@@ -1,5 +1,7 @@
 package com.example.modul2
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,28 +28,31 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
-import android.widget.Toast
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import android.content.Intent
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.modul2.navigation.Screen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
-    var text by remember { mutableStateOf("") }
-    var numberText by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            navController.navigate(Screen.Matkul.route)
+            navController.navigate(Screen.Matkul.route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
         }
     }
-    val isButtonEnabled = text.isNotEmpty() && numberText.isNotEmpty()
+    val isButtonEnabled = email.isNotEmpty() && password.isNotEmpty()
 
     Scaffold { paddingValues ->
         Column(
@@ -64,14 +70,14 @@ fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Person,
-                    contentDescription = "Nama",
+                    contentDescription = "Email",
                     tint = Color.Black,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Nama") },
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp)
                 )
@@ -84,18 +90,14 @@ fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Info,
-                    contentDescription = "NIM",
+                    contentDescription = "Password",
                     tint = Color.Black,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 OutlinedTextField(
-                    value = numberText,
-                    onValueChange = { newValue ->
-                        if (newValue.all { it.isDigit() }) {
-                            numberText = newValue
-                        }
-                    },
-                    label = { Text("NIM") },
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 )
@@ -103,16 +105,24 @@ fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
             Button(
                 onClick = {
                     if (isButtonEnabled) {
-                        auth.signInWithEmailAndPassword(text, numberText)
+                        auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
-                                    navController.navigate(Screen.Matkul.route)
+                                    navController.navigate(Screen.Matkul.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
+                                    }
                                 } else {
-                                    Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Login failed: ${task.exception?.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                     }
@@ -129,5 +139,3 @@ fun LoginScreen(auth: FirebaseAuth, navController: NavController) {
         }
     }
 }
-
-

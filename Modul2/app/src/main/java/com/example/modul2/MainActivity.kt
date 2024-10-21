@@ -1,5 +1,5 @@
 package com.example.modul2
-import android.content.Intent
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,76 +14,69 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.modul2.navigation.NavigationItem
+import com.example.modul2.navigation.Screen
+import com.example.modul2.screen.MatkulScreen
+import com.example.modul2.screen.ProfileScreen
 import com.example.modul2.ui.theme.Modul2Theme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
-import com.example.modul2.navigation.NavigationItem
-import com.example.modul2.navigation.Screen
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHost
-import com.example.modul2.screen.MatkulScreen
-import com.example.modul2.screen.ProfileScreen
-import com.google.android.engage.social.datamodel.Profile
+
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         auth = Firebase.auth
-
         setContent {
             Modul2Theme {
-                val navController = rememberNavController()
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val currentUser = auth.currentUser
-
-
-                    if (currentUser != null) {
-                        MainActivityContent(auth = auth, navController = navController)
-                    } else {
-                        NavHost(navController = navController, startDestination = "login") {
-                            composable("login") {
-                                LoginScreen(auth = auth, navController = navController)
-                            }
-                        }
-                    }
+                    MainActivityContent(auth = auth)
                 }
             }
         }
     }
 }
-
 @Composable
 fun MainActivityContent(
-    navController: NavHostController = rememberNavController(),
     auth: FirebaseAuth,
+    navController: NavHostController = rememberNavController(),
     modifier: Modifier = Modifier
-){
-    Scaffold (
-        bottomBar = { BottomBar(navController) },
+) {
+
+    val showBottomBar = remember { mutableStateOf(true) }
+
+    val currentBackStackEntry = navController.currentBackStackEntryAsState()
+    LaunchedEffect(currentBackStackEntry.value) {
+        showBottomBar.value = currentBackStackEntry.value?.destination?.route !in listOf("login")
+    }
+
+    Scaffold(
+        bottomBar = { if (showBottomBar.value) BottomBar(navController) },
         modifier = modifier
-    ){ innerPadding ->
+    ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Matkul.route,
+            startDestination = if (auth.currentUser != null) Screen.Matkul.route else "login",
             modifier = Modifier.padding(innerPadding)
-        ){
+        ) {
             composable(Screen.Matkul.route) {
                 MatkulScreen(auth = auth, navController = navController)
             }
@@ -96,6 +89,7 @@ fun MainActivityContent(
         }
     }
 }
+
 
 @Composable
 private fun BottomBar(
@@ -116,7 +110,6 @@ private fun BottomBar(
                 icon = painterResource(R.drawable.github),
                 screen = Screen.Profil
             )
-
         )
         navigationItems.forEach { item ->
             NavigationBarItem(
